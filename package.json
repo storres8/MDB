@@ -19,5 +19,8 @@
   "homepage": "https://github.com/storres8/MDB#readme",
   "devDependencies": {
     "eslint": "^5.16.0"
+  },
+  "dependencies": {
+    "mongodb": "^3.2.4"
   }
 }
