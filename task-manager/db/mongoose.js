@@ -31,25 +31,30 @@ me.save()
 // Task model
 const Task = mongoose.model("Task", {
   description: {
-    type: String
+    type: String,
+    validate(value) {
+      if (value.length < 10) {
+        throw new Error(" description must be longer than 10 characters");
+      }
+    }
   },
   completed: {
     type: Boolean
   }
 });
 
-// const walkDog = new Task({
-//   description: "Walk the dog after school",
-//   completed: false
-// });
+const walkDog = new Task({
+  description: "Walk the dog after school",
+  completed: false
+});
 
-// walkDog
-//   .save()
-//   .then(() => console.log(walkDog))
-//   .catch(error => console.log(error));
+walkDog
+  .save()
+  .then(() => console.log(walkDog))
+  .catch(error => console.log(error));
 
 const washDishes = new Task({
-  description: "wash dishes before dinner",
+  description: "wash",
   completed: true
 });
 
