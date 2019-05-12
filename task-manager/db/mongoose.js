@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 const options = {
   useNewUrlParser: true,
   useCreateIndex: true
@@ -12,12 +13,36 @@ const User = mongoose.model("User", {
   },
   age: {
     type: Number
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error("Invalid Email");
+      }
+    }
+  },
+  password: {
+    type: String,
+    required: true,
+    validate(value) {
+      this.password = validator.trim(value);
+      if (this.password.length < 6) {
+        throw new Error("Password must be longer than 6 characters");
+      } else if (this.password.includes("password")) {
+        throw new Error("Password can not contain 'password'");
+      }
+    }
   }
 });
 
 const me = new User({
   name: "steven torres",
-  age: 23
+  age: 23,
+  email: "steve2@gmail.com",
+  password: "           4Everyoung          "
 });
 
 me.save()
@@ -32,33 +57,39 @@ me.save()
 const Task = mongoose.model("Task", {
   description: {
     type: String,
+    required: true,
     validate(value) {
+      this.description = validator.trim(this.description);
       if (value.length < 10) {
         throw new Error(" description must be longer than 10 characters");
       }
     }
   },
   completed: {
-    type: Boolean
+    type: Boolean,
+    default: false
   }
 });
 
-const walkDog = new Task({
-  description: "Walk the dog after school",
-  completed: false
+let cleanRoom = new Task({
+  description: "           clean room             "
 });
 
-walkDog
+cleanRoom
   .save()
-  .then(() => console.log(walkDog))
-  .catch(error => console.log(error));
+  .then(() => {
+    console.log(cleanRoom);
+  })
+  .catch(errors => {
+    console.log(errors);
+  });
 
-const washDishes = new Task({
-  description: "wash",
-  completed: true
-});
+// const washDishes = new Task({
+//   description: "wash",
+//   completed: true
+// });
 
-washDishes
-  .save()
-  .then(() => console.log(washDishes))
-  .catch(error => console.log(error));
+// washDishes
+//   .save()
+//   .then(() => console.log(washDishes))
+//   .catch(error => console.log(error));
