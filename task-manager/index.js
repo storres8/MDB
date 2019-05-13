@@ -49,41 +49,38 @@ app.get("/users/:id", async (req, resp) => {
 });
 
 // Post endpoint for creating new Tasks
-app.post("/tasks", (req, res) => {
-  const task = new Task(req.body);
-  task
-    .save()
-    .then(() => {
-      res.send(task);
-    })
-    .catch(e => {
-      res.status(400).send(e);
-    });
+app.post("/tasks", async (req, res) => {
+  const task = await Task(req.body);
+
+  try {
+    await task.save();
+    res.status(201).send(task);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
 // Get endpoint for fetching all tasks in DB
-app.get("/tasks", (req, resp) => {
-  Task.find({}).then(tasks => {
-    resp
-      .status(200)
-      .send(tasks)
-      .catch(e => {
-        resp.status(500).send(e);
-      });
-  });
+app.get("/tasks", async (req, resp) => {
+  try {
+    const tasks = await Task.find({});
+    resp.status(200).send(tasks);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
 });
 
 // Get endpoint for fetching a specific task with a task ID
-app.get("/tasks/:id", (req, resp) => {
+app.get("/tasks/:id", async (req, resp) => {
   let id = req.params.id;
-  Task.findById(id)
-    .then(task => {
-      if (!task) {
-        resp.status(404).send("Task does not exist");
-      }
-      resp.status(200).send(task);
-    })
-    .catch(e => {
-      resp.status(500).send(e);
-    });
+
+  try {
+    let task = await Task.findById(id);
+    if (!task) {
+      return resp.status(404).send("Task not found");
+    }
+    resp.status(200).send(task);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
 });
