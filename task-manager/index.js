@@ -14,36 +14,38 @@ app.listen(port, () => {
 app.use(express.json());
 
 // Post endpoint for Creating new Users
-app.post("/users", (req, res) => {
+app.post("/users", async (req, res) => {
   const user = new User(req.body);
-  user
-    .save()
-    .then(() => res.send(user))
-    .catch(e => {
-      res.status(400).send(e);
-    });
+  try {
+    await user.save();
+    res.status(200).send(user);
+  } catch (e) {
+    res.status(400).send(e);
+  }
 });
 
 // Get endpoint for getting all Users
-app.get("/users", (req, resp) => {
-  User.find({})
-    .then(users => resp.send(users))
-    .catch(e => resp.status(500).send(e));
+app.get("/users", async (req, resp) => {
+  try {
+    const users = await User.find({});
+    resp.send(users);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
 });
 
 // Get endpoint for fetching a specefic user based on their ID
-app.get("/users/:id", (req, resp) => {
+app.get("/users/:id", async (req, resp) => {
   let id = req.params.id;
-  User.findById(id)
-    .then(user => {
-      if (!user) {
-        return resp.status(404).send("User not found");
-      }
-      resp.status(200).send(user);
-    })
-    .catch(() => {
-      resp.status(500).send("User not found");
-    });
+  try {
+    let user = await User.findById(id);
+    if (!user) {
+      return resp.status(404).send("User not found");
+    }
+    resp.status(200).send(user);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
 });
 
 // Post endpoint for creating new Tasks
