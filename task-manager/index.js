@@ -48,6 +48,35 @@ app.get("/users/:id", async (req, resp) => {
   }
 });
 
+// Patch endpoint for updating an existing user's information
+app.patch("/users/:id", async (req, resp) => {
+  // custom code to make sure only specified fields are updated if not throw error
+  const allowedUpdates = ["name", "email", "password", "age"];
+  const updates = Object.keys(req.body);
+  const valid = updates.every(update => allowedUpdates.includes(update));
+
+  if (!valid) {
+    resp.status(400).send({ error: "Invalid updates." });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    // Handles if there is no user found in the db
+    if (!user) {
+      return resp.status(404).send();
+    }
+    // if there was a user and data was valid return the updated user
+    return resp.status(201).send(user);
+
+    // catch will error out when there was a user but the data wasn't valid so no update
+  } catch (error) {
+    resp.status(400).send(error);
+  }
+});
+
 // Post endpoint for creating new Tasks
 app.post("/tasks", async (req, res) => {
   const task = await Task(req.body);
