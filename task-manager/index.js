@@ -113,3 +113,31 @@ app.get("/tasks/:id", async (req, resp) => {
     resp.status(500).send(error);
   }
 });
+
+app.patch("/tasks/:id", async (req, resp) => {
+  // custom code to make sure only specified fields are updated if not throw error
+  const allowedUpdates = ["description", "completed"];
+  const updates = Object.keys(req.body);
+  const valid = updates.every(update => allowedUpdates.includes(update));
+
+  if (!valid) {
+    resp.status(400).send({ error: "Invalid updates." });
+  }
+
+  try {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    // Handles if there is no task found in the db
+    if (!task) {
+      return resp.status(404).send();
+    }
+    // if there was a task and data was valid return the updated task
+    return resp.status(201).send(task);
+
+    // catch will throw error when there was a task to create, but the data was invalid so no update of task
+  } catch (error) {
+    resp.status(400).send(error.message);
+  }
+});

@@ -21,11 +21,11 @@ const User = mongoose.model("User", {
   password: {
     type: String,
     required: true,
+    trim: true,
     validate(value) {
-      this.password = validator.trim(value);
-      if (this.password.length < 6) {
+      if (value < 6) {
         throw new Error("Password must be longer than 6 characters");
-      } else if (this.password.includes("password")) {
+      } else if (value.toLowerCase().includes("password")) {
         throw new Error("Password can not contain 'password'");
       }
     }
