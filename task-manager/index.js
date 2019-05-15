@@ -77,6 +77,20 @@ app.patch("/users/:id", async (req, resp) => {
   }
 });
 
+// Delete endpoint for Users
+app.delete("/users/:id", async (req, resp) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return resp.status(404).send("No user found to delete");
+    }
+    resp.status(200).send(user);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
+});
+
 // Post endpoint for creating new Tasks
 app.post("/tasks", async (req, res) => {
   const task = await Task(req.body);
