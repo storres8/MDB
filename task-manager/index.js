@@ -155,3 +155,16 @@ app.patch("/tasks/:id", async (req, resp) => {
     resp.status(400).send(error.message);
   }
 });
+
+// Delete tasks from the DB
+app.delete("/tasks/:id", async (req, resp) => {
+  const task = await Task.findByIdAndDelete(req.params.id);
+  try {
+    if (!task) {
+      return resp.status(404).send("no task found to delete");
+    }
+    resp.status(200).send(task);
+  } catch (error) {
+    resp.status(500).send(error);
+  }
+});
