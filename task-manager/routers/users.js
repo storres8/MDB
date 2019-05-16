@@ -51,10 +51,23 @@ router.patch("/users/:id", async (req, resp) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    /* 
+    this method didnt work because findByIdAndUpdate bypasses the mongoose middleware and goes straight
+    to the database. We have to refactor it so we set a specific save so our middleware can operate
+    */
+    // const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    //   new: true,
+    //   runValidators: true
+    // });
+
+    // grabbing the user and using await for the promise
+    const user = await User.findById(req.params.id);
+    // dynamically setting the fields of the user thorugh the updates object defined above
+    updates.forEach(update => (user[update] = req.body[update]));
+    // here is where we specifically save user.save() which will allow us to use our middleware right before
+    // this function is called
+    await user.save();
+
     // Handles if there is no user found in the db
     if (!user) {
       return resp.status(404).send();

@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
-const User = mongoose.model("User", {
+// We create a seperate schema inorder to be able to use mongoose middleware
+const userSchema = new mongoose.Schema({
   name: {
     type: String
   },
@@ -31,5 +33,24 @@ const User = mongoose.model("User", {
     }
   }
 });
+
+// setting up the mongoose middleware on the User model
+// we're using .pre to tell the program that we want the middleware run before the user has been saved
+/* 
+we use the next argument in the CB to tell mongoose to continue running the file after the middleware is done
+doing what we want. In this next tells our function that we are done and want to proceed with saving the user
+*/
+
+userSchema.pre("save", async function(next) {
+  const user = this;
+
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
+  next();
+});
+
+// setting up the user model with the user schema defined above
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

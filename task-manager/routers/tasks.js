@@ -50,10 +50,18 @@ router.patch("/tasks/:id", async (req, resp) => {
   }
 
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
+    // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    //   new: true,
+    //   runValidators: true
+    // });
+
+    // updated logic for applying the .save() method which allows us to use middleware with mongoose:
+    const task = await Task.findById(req.params.id);
+    updates.forEach(update => {
+      task[update] = req.body[update];
     });
+    task.save();
+
     // Handles if there is no task found in the db
     if (!task) {
       return resp.status(404).send();
