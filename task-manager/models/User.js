@@ -34,13 +34,38 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Building the the findByCredentials method onto the User schema to verify login
+/* statics allows us to define new methods onto our user model
+ */
+userSchema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email: email });
+
+  if (!user) {
+    // throw new error immediately end the execution of this function
+    throw new Error("Login Failed");
+  }
+  // if there is no error than that means there is a user in the database that matches the email provided
+  // in that case, we want to now verify that user's password
+  /* bcrypt.compare returns a promise of true or false checking to see if the hashed password matched the
+     plaun text text password once it has been hashed 
+  */
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  // If the user puts in the wrong password, but the right email we want to throw an error
+  if (!isMatch) {
+    throw new Error("Login Failed");
+  }
+  return user;
+};
+
+// MAKING SURE TO HASH THE PASSWORD
 // setting up the mongoose middleware on the User model
 // we're using .pre to tell the program that we want the middleware run before the user has been saved
 /* 
 we use the next argument in the CB to tell mongoose to continue running the file after the middleware is done
 doing what we want. In this next tells our function that we are done and want to proceed with saving the user
 */
-
 userSchema.pre("save", async function(next) {
   const user = this;
 

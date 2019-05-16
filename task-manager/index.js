@@ -1,6 +1,5 @@
 const express = require("express");
 require("./db/mongoose");
-const Task = require("./models/Task");
 const app = express();
 const userRouter = require("./routers/users");
 const taskRouter = require("./routers/tasks");

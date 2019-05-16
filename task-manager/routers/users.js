@@ -4,6 +4,19 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../models/User");
 
+// Login in router for a user
+router.post("/users/login", async (req, resp) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  try {
+    // findByCredentials is a custom method we built on the user model to handle verification of the user
+    const user = await User.findByCredentials(email, password);
+    resp.status(200).send(user);
+  } catch (error) {
+    resp.status(400).send(error);
+  }
+});
+
 // Post endpoint for Creating new Users
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
