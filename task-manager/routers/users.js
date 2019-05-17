@@ -11,7 +11,11 @@ router.post("/users/login", async (req, resp) => {
   try {
     // findByCredentials is a custom method we built on the user model to handle verification of the user
     const user = await User.findByCredentials(email, password);
-    resp.status(200).send(user);
+    const token = await user.generateAuthToken();
+    resp.status(200).send({
+      user: user,
+      token: token
+    });
   } catch (error) {
     resp.status(400).send(error);
   }

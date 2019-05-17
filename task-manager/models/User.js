@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // We create a seperate schema inorder to be able to use mongoose middleware
 const userSchema = new mongoose.Schema({
@@ -35,7 +36,8 @@ const userSchema = new mongoose.Schema({
 });
 
 // Building the the findByCredentials method onto the User schema to verify login
-/* statics allows us to define new methods onto our user model
+/* statics allows us to define new function to be called onto our User model. In other words statucs allows us 
+    to define Model methods what affect the model 
  */
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email: email });
@@ -64,7 +66,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 // we're using .pre to tell the program that we want the middleware run before the user has been saved
 /* 
 we use the next argument in the CB to tell mongoose to continue running the file after the middleware is done
-doing what we want. In this next tells our function that we are done and want to proceed with saving the user
+doing what we want. In this next() tells our function that we are done and want to proceed with saving the user
 */
 userSchema.pre("save", async function(next) {
   const user = this;
@@ -75,7 +77,15 @@ userSchema.pre("save", async function(next) {
   next();
 });
 
+/* .methods allows us to define methods to be used on each instance of a new User. In other words the .methods
+    action allows us to define specific methods on a new User instance not the entire model.
+*/
+userSchema.methods.generateAuthToken = async function() {
+  const user = this;
+  const token = jwt.sign({ _id: user._id.toString() }, "verifyMyUser");
+  return token;
+};
+
 // setting up the user model with the user schema defined above
 const User = mongoose.model("User", userSchema);
-
 module.exports = User;
