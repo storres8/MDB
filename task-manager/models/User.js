@@ -32,7 +32,18 @@ const userSchema = new mongoose.Schema({
         throw new Error("Password can not contain 'password'");
       }
     }
-  }
+  },
+  // Setting up a token field on the User document to store all the tokens generated for that specific user.
+  // Token field will be an array of objects where each object is a different token that was generated when
+  // the user logged in. That way the user can log in from multiple devices w/o an error being thrown.
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true
+      }
+    }
+  ]
 });
 
 // Building the the findByCredentials method onto the User schema to verify login
@@ -82,7 +93,13 @@ userSchema.pre("save", async function(next) {
 */
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
+  // creating a new JWT token
   const token = jwt.sign({ _id: user._id.toString() }, "verifyMyUser");
+  // adding the new token into the array of object tokens defined in the user shema
+  user.tokens = user.tokens.concat({ token: token });
+  // saving the user
+  await user.save();
+  // returning the token
   return token;
 };
 
