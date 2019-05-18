@@ -103,6 +103,23 @@ userSchema.methods.generateAuthToken = async function() {
   return token;
 };
 
+// Method for removing the user password and tokens from the login response.
+// .toJSON gets called whenever we stringify an object, and Express stringifys an object whenever we
+// send a response back! So this method automaticlly gets called when we send a response.
+/*user.toObject() is used for cloning the user object. userObject is the cloned object.
+  Basically we are cloning the user object and removing certain properties from userObject object 
+  and sending it as response.
+  res.send(user) implicitly invokes JSON.stringify(user) which further implicitly invokes toJSON() 
+  which returns userObject.
+*/
+userSchema.methods.toJSON = function() {
+  const user = this;
+  const userObject = user.toObject();
+  delete userObject.password;
+  delete userObject.tokens;
+  return userObject;
+};
+
 // setting up the user model with the user schema defined above
 const User = mongoose.model("User", userSchema);
 module.exports = User;
