@@ -22,13 +22,26 @@ router.post("/users/login", async (req, resp) => {
   }
 });
 
+router.post("/users/logout", auth, async (req, resp) => {
+  try {
+    let currentToken = req.token;
+    req.user.tokens = req.user.tokens.filter(token => {
+      return token.token !== currentToken;
+    });
+    await req.user.save();
+    resp.status(200).send("Logged Out");
+  } catch (error) {
+    resp.status(500).send({ error: "loggout failed" });
+  }
+});
+
 // Post endpoint for Creating new Users
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
     const token = await user.generateAuthToken();
-    res.status(200).send({
+    res.status(201).send({
       user: user,
       token: token
     });

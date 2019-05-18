@@ -26,6 +26,8 @@ const auth = async (req, resp, next) => {
     // Since we already fetched the valid user from the DB we can store the user in the request so the
     // route handle won't have to waste time and fetch the user again we can just access it out of the req.user.
     // We then call the next() to initiate the router to start.
+    // We are also adding in the specific token used to authenticate to log out of the specific devise
+    req.token = token;
     req.user = user;
     next();
   } catch (error) {
