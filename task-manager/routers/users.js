@@ -22,16 +22,34 @@ router.post("/users/login", async (req, resp) => {
   }
 });
 
+// Loggs out user
 router.post("/users/logout", auth, async (req, resp) => {
   try {
     let currentToken = req.token;
+    // returns an array of tokens that don't include the one being passes in the request & sets that to the
+    // current tokens array thereby deleting the token and loggging the user out
     req.user.tokens = req.user.tokens.filter(token => {
       return token.token !== currentToken;
     });
+    // Saving the changed made to the user
     await req.user.save();
     resp.status(200).send("Logged Out");
   } catch (error) {
     resp.status(500).send({ error: "loggout failed" });
+  }
+});
+
+// Logging out of all sessions
+router.post("/users/logoutAll", auth, async (req, resp) => {
+  try {
+    req.user.tokens = [];
+    if (req.user.tokens.length > 0) {
+      throw new Error();
+    }
+    await req.user.save();
+    resp.status(200).send("Logged Out Of All Sessions");
+  } catch (error) {
+    resp.satus(500).send(error);
   }
 });
 
