@@ -3,6 +3,7 @@ const express = require("express");
 // initiate a new router variable with express.Router() so the application can load the routes
 const router = new express.Router();
 const User = require("../models/User");
+const auth = require("../middleware/auth");
 
 // Login in router for a user
 router.post("/users/login", async (req, resp) => {
@@ -36,17 +37,15 @@ router.post("/users", async (req, res) => {
   }
 });
 
-// Get endpoint for getting all Users
-router.get("/users", async (req, resp) => {
-  try {
-    const users = await User.find({});
-    resp.send(users);
-  } catch (error) {
-    resp.status(500).send(error);
-  }
+// Get for a user to get their profile when they are authenticated.
+// setting in the middlware function as the second argument in the router allows us to use the middleware
+// only for this specific route and no other.
+router.get("/users/me", auth, async (req, resp) => {
+  resp.status(200).send(req.user);
 });
 
-// Get endpoint for fetching a specefic user based on their ID
+// Get endpoint for fetching a specefic user based on their ID.
+
 router.get("/users/:id", async (req, resp) => {
   let id = req.params.id;
   try {
