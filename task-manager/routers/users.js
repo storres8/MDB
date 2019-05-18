@@ -72,21 +72,6 @@ router.get("/users/me", auth, async (req, resp) => {
   resp.status(200).send(req.user);
 });
 
-// Get endpoint for fetching a specefic user based on their ID.
-
-router.get("/users/:id", async (req, resp) => {
-  let id = req.params.id;
-  try {
-    let user = await User.findById(id);
-    if (!user) {
-      return resp.status(404).send("User not found");
-    }
-    resp.status(200).send(user);
-  } catch (error) {
-    resp.status(500).send(error);
-  }
-});
-
 // Patch endpoint for updating an existing user's information
 router.patch("/users/:id", async (req, resp) => {
   // custom code to make sure only specified fields are updated if not throw error
@@ -130,13 +115,10 @@ router.patch("/users/:id", async (req, resp) => {
 });
 
 // Delete endpoint for Users
-router.delete("/users/:id", async (req, resp) => {
+router.delete("/users/me", auth, async (req, resp) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return resp.status(404).send("No user found to delete");
-    }
+    const user = await User.findByIdAndDelete(req.user._id);
+    // await req.user.remove()
     resp.status(200).send(user);
   } catch (error) {
     resp.status(500).send(error);
