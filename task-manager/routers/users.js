@@ -56,6 +56,7 @@ router.post("/users", async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
+    // when a new user gets created we generate a token and they are logged in for the first time
     const token = await user.generateAuthToken();
     res.status(201).send({
       user: user,
