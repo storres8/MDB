@@ -12,6 +12,7 @@ router.post("/users/login", async (req, resp) => {
   try {
     // findByCredentials is a custom method we built on the user model to handle verification of the user
     const user = await User.findByCredentials(email, password);
+    // .generateAuthToken is also custom method build on a specific user instance
     const token = await user.generateAuthToken();
     resp.status(200).send({ user: user, token: token });
   } catch (error) {
@@ -73,7 +74,7 @@ router.get("/users/me", auth, async (req, resp) => {
 });
 
 // Patch endpoint for updating an existing user's information
-router.patch("/users/:id", async (req, resp) => {
+router.patch("/users/me", auth, async (req, resp) => {
   // custom code to make sure only specified fields are updated if not throw error
   const allowedUpdates = ["name", "email", "password", "age"];
   const updates = Object.keys(req.body);
@@ -94,17 +95,14 @@ router.patch("/users/:id", async (req, resp) => {
     // });
 
     // grabbing the user and using await for the promise
-    const user = await User.findById(req.params.id);
+    console.log(req.user);
+    const user = req.user;
     // dynamically setting the fields of the user thorugh the updates object defined above
     updates.forEach(update => (user[update] = req.body[update]));
     // here is where we specifically save user.save() which will allow us to use our middleware right before
     // this function is called
     await user.save();
 
-    // Handles if there is no user found in the db
-    if (!user) {
-      return resp.status(404).send();
-    }
     // if there was a user and data was valid return the updated user
     return resp.status(201).send(user);
 

@@ -28,6 +28,8 @@ const auth = async (req, resp, next) => {
     // We then call the next() to initiate the router to start.
     // We are also adding in the specific token used to authenticate to log out of the specific devise
     req.token = token;
+    // Since we already fetched a user from the DB we just take the user information and place it into the
+    // req to be passed around while the user is logged in.
     req.user = user;
     next();
   } catch (error) {
