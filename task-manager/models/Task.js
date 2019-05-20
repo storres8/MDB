@@ -14,6 +14,11 @@ const Task = mongoose.model("Task", {
   completed: {
     type: Boolean,
     default: false
+  },
+  owner: {
+    // saying the data stored in owner is going to be an id.
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
   }
 });
 
