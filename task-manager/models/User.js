@@ -46,6 +46,19 @@ const userSchema = new mongoose.Schema({
   ]
 });
 
+/* Setting up a virtual property on the User model. A virtual property is a relationship between to models,
+and the information is not stored in the DB itself. Setting up this virtual property lets us establish a 
+relationship to the Task model and query all the tasks that belong to a specific user with just their ID.
+*/
+
+userSchema.virtual("tasks", {
+  // reference Task model
+  ref: "Task",
+  // local field must match the foreign field on the model we are referencing. So in Task it would be owner.
+  localField: "_id",
+  foreignField: "owner"
+});
+
 // Building the the findByCredentials method onto the User schema to verify login
 /* statics allows us to define new function to be called onto our User model. In other words statucs allows us 
     to define Model methods what affect the model 
