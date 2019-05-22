@@ -21,9 +21,9 @@ router.post("/tasks", auth, async (req, res) => {
 });
 
 // Get endpoint for fetching all tasks in DB
-router.get("/tasks", async (req, resp) => {
+router.get("/tasks", auth, async (req, resp) => {
   try {
-    const tasks = await Task.find({});
+    const tasks = await Task.find({ owner: req.user._id });
     resp.status(200).send(tasks);
   } catch (error) {
     resp.status(500).send(error);
@@ -31,13 +31,13 @@ router.get("/tasks", async (req, resp) => {
 });
 
 // Get endpoint for fetching a specific task with a task ID
-router.get("/tasks/:id", async (req, resp) => {
-  let id = req.params.id;
+router.get("/tasks/:id", auth, async (req, resp) => {
+  let _id = req.params.id;
 
   try {
-    let task = await Task.findById(id);
+    const task = await Task.findOne({ _id, owner: req.user._id });
     if (!task) {
-      return resp.status(404).send("Task not found");
+      return resp.status(404).send();
     }
     resp.status(200).send(task);
   } catch (error) {
@@ -45,7 +45,7 @@ router.get("/tasks/:id", async (req, resp) => {
   }
 });
 
-router.patch("/tasks/:id", async (req, resp) => {
+router.patch("/tasks/:id", auth, async (req, resp) => {
   // custom code to make sure only specified fields are updated if not throw error
   const allowedUpdates = ["description", "completed"];
   const updates = Object.keys(req.body);
@@ -56,22 +56,21 @@ router.patch("/tasks/:id", async (req, resp) => {
   }
 
   try {
-    // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-    //   new: true,
-    //   runValidators: true
-    // });
+    const task = await Task.findOne({
+      _id: req.params.id,
+      owner: req.user._id
+    });
+    // Handles if there is no task found in the db
+    if (!task) {
+      return resp.status(404).send();
+    }
 
     // updated logic for applying the .save() method which allows us to use middleware with mongoose:
-    const task = await Task.findById(req.params.id);
     updates.forEach(update => {
       task[update] = req.body[update];
     });
     task.save();
 
-    // Handles if there is no task found in the db
-    if (!task) {
-      return resp.status(404).send();
-    }
     // if there was a task and data was valid return the updated task
     return resp.status(201).send(task);
 
@@ -82,8 +81,11 @@ router.patch("/tasks/:id", async (req, resp) => {
 });
 
 // Delete tasks from the DB
-router.delete("/tasks/:id", async (req, resp) => {
-  const task = await Task.findByIdAndDelete(req.params.id);
+router.delete("/tasks/:id", auth, async (req, resp) => {
+  const task = await Task.findOneAndDelete({
+    _id: req.params.id,
+    owner: req.user._id
+  });
   try {
     if (!task) {
       return resp.status(404).send("no task found to delete");
