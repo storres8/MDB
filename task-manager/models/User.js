@@ -2,49 +2,55 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Task = require("./Task");
 
 // We create a seperate schema inorder to be able to use mongoose middleware
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String
-  },
-  age: {
-    type: Number
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error("Invalid Email");
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String
+    },
+    age: {
+      type: Number
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid Email");
+        }
       }
-    }
-  },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-    validate(value) {
-      if (value < 6) {
-        throw new Error("Password must be longer than 6 characters");
-      } else if (value.toLowerCase().includes("password")) {
-        throw new Error("Password can not contain 'password'");
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      validate(value) {
+        if (value < 6) {
+          throw new Error("Password must be longer than 6 characters");
+        } else if (value.toLowerCase().includes("password")) {
+          throw new Error("Password can not contain 'password'");
+        }
       }
-    }
-  },
-  // Setting up a token field on the User document to store all the tokens generated for that specific user.
-  // Token field will be an array of objects where each object is a different token that was generated when
-  // the user logged in. That way the user can log in from multiple devices w/o an error being thrown.
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true
+    },
+    // Setting up a token field on the User document to store all the tokens generated for that specific user.
+    // Token field will be an array of objects where each object is a different token that was generated when
+    // the user logged in. That way the user can log in from multiple devices w/o an error being thrown.
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true
+        }
       }
-    }
-  ]
-});
+    ]
+  },
+  {
+    timestamps: true
+  }
+);
 
 /* Setting up a virtual property on the User model. A virtual property is a relationship between to models,
 and the information is not stored in the DB itself. Setting up this virtual property lets us establish a 
@@ -132,6 +138,14 @@ userSchema.methods.toJSON = function() {
   delete userObject.tokens;
   return userObject;
 };
+
+// Cascade delete all tasks related to a user if that user is deleted.
+// set up as middleware.
+userSchema.pre("remove", async function(next) {
+  const user = this;
+  await Task.deleteMany({ owner: user._id });
+  next();
+});
 
 // setting up the user model with the user schema defined above
 const User = mongoose.model("User", userSchema);
