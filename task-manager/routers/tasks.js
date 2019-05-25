@@ -21,10 +21,29 @@ router.post("/tasks", auth, async (req, res) => {
 });
 
 // Get endpoint for fetching all tasks in DB
+// /tasks/completed?=true
 router.get("/tasks", auth, async (req, resp) => {
+  // req.query.completed will contain the value from the url that will signify how the resp data
+  // will be filtered and sent back.
+  let match = {};
+
+  if (req.query.completed === "true" || req.query.completed === "false") {
+    match.completed = req.query.completed === "true";
+  }
+
   try {
-    const tasks = await Task.find({ owner: req.user._id });
-    resp.status(200).send(tasks);
+    // Using model.populate to pass in parameters that will filter the data we get back.
+    // Populate lets you reference documents in other collections from a mongo DB,
+    // and it will not run unless we invoke it with executePopulate()
+    await req.user
+      .populate({
+        path: "tasks",
+        //match is an object that will take in arguments to filter the data and bring back only the data
+        // that fits the parameters defined in match.
+        match: match
+      })
+      .execPopulate();
+    resp.status(200).send(req.user.tasks);
   } catch (error) {
     resp.status(500).send(error);
   }

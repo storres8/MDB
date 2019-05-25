@@ -96,7 +96,8 @@ userSchema.statics.findByCredentials = async (email, password) => {
 // we're using .pre to tell the program that we want the middleware run before the user has been saved
 /* 
 we use the next argument in the CB to tell mongoose to continue running the file after the middleware is done
-doing what we want. In this next() tells our function that we are done and want to proceed with saving the user
+doing what we want. In this next() tells our function that we are done and want to proceed with saving the 
+user
 */
 userSchema.pre("save", async function(next) {
   const user = this;
