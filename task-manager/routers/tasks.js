@@ -21,7 +21,13 @@ router.post("/tasks", auth, async (req, res) => {
 });
 
 // Get endpoint for fetching all tasks in DB
-// /tasks/completed?=true
+/* /tasks?completed=true <-- showing how we could filter through req.query.completed
+  /tasks?limit=10&skip=0 <-- showing how we could paginate our results to not show all at once. Rather
+  we would get the first 10 and then if the user wants anther 10 we could request it. Skip is the number
+  of results that you would like to skip. For example if you skip 0 then its the first page of results, if 
+  you skip 10 then you would be at the second page and if you skip 20 then you would be requesting the 3rd
+  page of results.
+*/
 router.get("/tasks", auth, async (req, resp) => {
   // req.query.completed will contain the value from the url that will signify how the resp data
   // will be filtered and sent back.
@@ -40,7 +46,11 @@ router.get("/tasks", auth, async (req, resp) => {
         path: "tasks",
         //match is an object that will take in arguments to filter the data and bring back only the data
         // that fits the parameters defined in match.
-        match: match
+        match: match,
+        options: {
+          limit: parseInt(req.query.limit),
+          skip: parseInt(req.query.skip)
+        }
       })
       .execPopulate();
     resp.status(200).send(req.user.tasks);
