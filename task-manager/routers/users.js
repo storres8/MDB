@@ -152,8 +152,23 @@ let upload = multer({
     cb(undefined, true);
   }
 });
-router.post("/users/me/avatar", upload.single("avatar"), (req, resp) => {
-  resp.status(200).send("file uploaded");
-});
+router.post(
+  "/users/me/avatar",
+  upload.single("avatar"),
+  (req, resp) => {
+    resp.status(200).send("file uploaded");
+  },
+  // using the comment below to get rid of error from not using the next variable.
+  /* Function needs to always have (error, req, resp, next) as arguments for it to work.
+    by including those argumets we're telling express that the function is used specifically 
+    used to handle errors.
+  */
+
+  // eslint-disable-next-line no-unused-vars
+  (error, req, resp, next) => {
+    // this catched and displays our error for our file upload.
+    resp.status(400).send({ error: error.message });
+  }
+);
 
 module.exports = router;
