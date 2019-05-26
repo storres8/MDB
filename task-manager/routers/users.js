@@ -132,7 +132,24 @@ let upload = multer({
   limits: {
     // limits the size of the file that we are uploading.
     // The storage limit amount is in bytes so 1,000,000 bytes is 1 megabyte.
+    // Any file > 1,000,000 bytes AKA 1MB will not be uploaded with this route.
     fileSize: 1000000
+  },
+  // fileFilter function runs when a new file is attempting to upload and can reject it.
+  // takes 3 arguments: a request, a file, and a callback function
+  /* callback function has 3 ways of using it: 
+    1) cb(new Error('file must be pdf')) --> this is how we would throw an error 
+    2) cb(undefined, true) --> this is how we accept the file 
+    3) cb(undefined, false) --> this does not accept file, but shows no error 
+  */
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(
+        new Error("Please upload either a .jpg, .jpeg or a .png file.")
+      );
+    }
+
+    cb(undefined, true);
   }
 });
 router.post("/users/me/avatar", upload.single("avatar"), (req, resp) => {
