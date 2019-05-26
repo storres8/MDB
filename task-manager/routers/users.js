@@ -6,6 +6,8 @@ const multer = require("multer");
 const router = new express.Router();
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+// Loading in file-type for image handling
+const fileType = require("file-type");
 
 // Login in router for a user
 router.post("/users/login", async (req, resp) => {
@@ -175,6 +177,7 @@ router.post(
   }
 );
 
+// route to delete avatar
 router.delete(
   "/users/me/avatar",
   auth,
@@ -191,5 +194,24 @@ router.delete(
     resp.status(503).send({ Error: error.message });
   }
 );
+
+// Fetching avatar image for a user through the user ID
+router.get("/users/:id/avatar", async (req, resp) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.avatar) {
+      throw new Error("Error no image found");
+    }
+    // Here we are setting a response header so the browser knows how to open the image.
+    // 1st argument is the name of the response header and the 2nd argument is the value.
+    const TypeOfFile = fileType(user.avatar);
+    // using fileType returs an object with 2 keys the "ext" and "mime"
+
+    resp.set("Content-Type", TypeOfFile.mime);
+    resp.send(user.avatar);
+  } catch (error) {
+    resp.status(404).send({ Error: error.message });
+  }
+});
 
 module.exports = router;

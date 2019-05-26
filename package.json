@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "file-type": "^11.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.2.4",
     "mongoose": "^5.5.7",
