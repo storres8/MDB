@@ -1,5 +1,7 @@
 // Load in express so this file is connected to the framework
 const express = require("express");
+// Loading in multer libray
+const multer = require("multer");
 // initiate a new router variable with express.Router() so the application can load the routes
 const router = new express.Router();
 const User = require("../models/User");
@@ -122,6 +124,19 @@ router.delete("/users/me", auth, async (req, resp) => {
   } catch (error) {
     resp.status(500).send(error);
   }
+});
+
+// Setting up profile pic file uploads for the user
+let upload = multer({
+  dest: "avatars",
+  limits: {
+    // limits the size of the file that we are uploading.
+    // The storage limit amount is in bytes so 1,000,000 bytes is 1 megabyte.
+    fileSize: 1000000
+  }
+});
+router.post("/users/me/avatar", upload.single("avatar"), (req, resp) => {
+  resp.status(200).send("file uploaded");
 });
 
 module.exports = router;
