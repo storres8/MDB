@@ -45,7 +45,12 @@ const userSchema = new mongoose.Schema(
           required: true
         }
       }
-    ]
+    ],
+
+    avatar: {
+      // Buffer allows us to store the file upload as binary.
+      type: Buffer
+    }
   },
   {
     timestamps: true

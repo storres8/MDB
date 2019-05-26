@@ -128,7 +128,6 @@ router.delete("/users/me", auth, async (req, resp) => {
 
 // Setting up profile pic file uploads for the user
 let upload = multer({
-  dest: "avatars",
   limits: {
     // limits the size of the file that we are uploading.
     // The storage limit amount is in bytes so 1,000,000 bytes is 1 megabyte.
@@ -154,8 +153,13 @@ let upload = multer({
 });
 router.post(
   "/users/me/avatar",
+  auth,
   upload.single("avatar"),
-  (req, resp) => {
+  async (req, resp) => {
+    // req.file.buffer allows us to access the binary file data that is being passed in.
+    // we can only access this data is we do NOT specify a directory where the upload will live.
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
     resp.status(200).send("file uploaded");
   },
   // using the comment below to get rid of error from not using the next variable.
@@ -168,6 +172,23 @@ router.post(
   (error, req, resp, next) => {
     // this catched and displays our error for our file upload.
     resp.status(400).send({ error: error.message });
+  }
+);
+
+router.delete(
+  "/users/me/avatar",
+  auth,
+  async (req, resp) => {
+    if (!req.user.avatar) {
+      throw new Error("No avatar photo to delete");
+    }
+    req.user.avatar = undefined;
+    await req.user.save();
+    resp.status(200).send("Avatar Successfully Deleted");
+  },
+  // eslint-disable-next-line no-unused-vars
+  (error, req, resp, next) => {
+    resp.status(503).send({ Error: error.message });
   }
 );
 
