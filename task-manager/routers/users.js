@@ -8,6 +8,8 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 // Loading in file-type for image handling
 const fileType = require("file-type");
+// Loading sharp
+const sharp = require("sharp");
 
 // Login in router for a user
 router.post("/users/login", async (req, resp) => {
@@ -160,7 +162,11 @@ router.post(
   async (req, resp) => {
     // req.file.buffer allows us to access the binary file data that is being passed in.
     // we can only access this data is we do NOT specify a directory where the upload will live.
-    req.user.avatar = req.file.buffer;
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 250, height: 250 })
+      .png()
+      .toBuffer();
+    req.user.avatar = buffer;
     await req.user.save();
     resp.status(200).send("file uploaded");
   },
