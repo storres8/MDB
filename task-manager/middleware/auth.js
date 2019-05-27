@@ -8,7 +8,7 @@ const auth = async (req, resp, next) => {
     const token = req.header("Authorization").replace("Bearer ", "");
     // Want to check to make sure the token is valid and not expired. jwt.verify does this for us and we
     // pass as arguments the token along with the secret key we defined when creating the token.
-    const decoded = jwt.verify(token, "verifyMyUser");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     /* We want to find one specific user that matches the id that we got from the token, and we also want 
     to check to make sure that the token has not been deleted from the user's token's array.  
     */

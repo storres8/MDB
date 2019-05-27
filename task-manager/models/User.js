@@ -119,7 +119,7 @@ userSchema.pre("save", async function(next) {
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
   // creating a new JWT token
-  const token = jwt.sign({ _id: user._id.toString() }, "verifyMyUser");
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
   // adding the new token into the array of object tokens defined in the user shema
   user.tokens = user.tokens.concat({ token: token });
   // saving the user
