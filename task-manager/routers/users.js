@@ -10,7 +10,7 @@ const auth = require("../middleware/auth");
 const fileType = require("file-type");
 // Loading sharp
 const sharp = require("sharp");
-const { sendWelcomeEmail, sendCancelEmail } = require("../emails/accounts");
+// const { sendWelcomeEmail, sendCancelEmail } = require("../emails/accounts");
 
 // Login in router for a user
 router.post("/users/login", async (req, resp) => {
@@ -64,7 +64,7 @@ router.post("/users", async (req, res) => {
   try {
     await user.save();
     // calling the welcome email function we created in accounts.js
-    sendWelcomeEmail(user.email, user.name);
+    // sendWelcomeEmail(user.email, user.name);
     // when a new user gets created we generate a token and they are logged in for the first time
     const token = await user.generateAuthToken();
     res.status(201).send({
@@ -127,7 +127,7 @@ router.delete("/users/me", auth, async (req, resp) => {
   try {
     const user = await User.findByIdAndDelete(req.user._id);
     // await req.user.remove()
-    sendCancelEmail(req.user.email, req.user.name);
+    // sendCancelEmail(req.user.email, req.user.name);
     resp.status(200).send(user);
   } catch (error) {
     resp.status(500).send(error);
